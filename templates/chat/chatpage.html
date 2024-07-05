@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link href="{% static 'css/pages/chat/chat.css' %}" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <input type="text" placeholder="Search or start new chat" />
+            </div>
+            <div class="chat-list">
+                {% for user in users %}
+                <div class="chat" data-username="{{ user.user.username }}" data-userid="{{ user.user.id }}" data-img="{{ user.profile_pic.url }}" data-firstname="{{user.user.first_name}}" data-lastname="{{user.user.last_name}}">
+                    <div class="chat-img">
+                        <img src="{{ user.profile_pic.url }}" height="350px" width="400px">
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">{{ user.user.first_name }} {{ user.user.last_name }}</div>
+                        <div class="chat-message"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="chat-window">
+            <div class="chat-header">
+                <div class="chat-img">
+
+                </div>
+                <div class="chat-info">
+                    <div class="chat-name"></div>
+                    <div class="chat-status"></div>
+                </div>
+            </div>
+            <div class="chat-body" style="display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: center;">
+                    <img src="{% static 'images/2842499.jpg' %}" height="250px">
+                </div>
+            </div>
+            <!-- <div class="chat-footer">
+                <input type="text" id="chat-message-input" placeholder="Type a message">
+                <button id="chat-message-submit" >Send</button>
+            </div> -->
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function() {
+        var selected = null;
+        var chatSocket = null;
+        var InputBox = null;
+        $('.chat').click(function() {
+            const username = $(this).data('username');
+            const img = $(this).data('img');
+            const firstname = $(this).data('firstname');
+            const lastname = $(this).data('lastname');
+            if (selected === username) return false;
+            const userId = $(this).data('userid');
+            selected = username;
+            $('.chat-header .chat-img').html('<img src="' + img + '" alt="Chat Image">');
+            $('.chat-header .chat-info .chat-name').html('<h3>' + firstname + ' ' + lastname + '</h3>');
+
+            var chatbody = document.getElementsByClassName('chat-body');
+                for (var i = 0; i < chatbody.length; i++) {
+                    chatbody[i].innerHTML = '';
+            }
+            // Close any existing WebSocket connection
+            if (chatSocket) {
+                chatSocket.close();
+                var chatbody = document.getElementsByClassName('chat-body');
+                    for (var i = 0; i < chatbody.length; i++) {
+                        chatbody[i].innerHTML = '';
+                }
+            }
+
+            chatSocket = new WebSocket(
+                'wss://' + window.location.host + '/ws/chat/' + username + '/'
+            );
+            
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                const message = data.message;
+                const username = data.username;
+
+                const messageClass = username === '{{ request.user.username }}' ? 'sent' : 'received';
+                const messageElement = `<div class="message ${messageClass}"><div class="message-content">${message}</div></div>`;
+                $('.chat-body').append(messageElement);
+            };
+
+            if (!InputBox){
+            console.log(InputBox,"-------------------------");
+            InputBox = `<div class="chat-footer"><input type="text" id="chat-message-input" placeholder="Type a message"><button id="chat-message-submit" >Send</button>`;
+            $('.chat-window').append(InputBox);
+            }
+
+            chatSocket.onclose = function(e) {
+                console.log('Chat socket closed unexpectedly');
+            };
+
+            $('#chat-message-submit').off('click').on('click', function() {
+                const messageInputDom = $('#chat-message-input');
+                const message = messageInputDom.val();
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'username': '{{ request.user.username }}',
+                    'user_id': userId
+                }));
+                messageInputDom.val('');
+            });
+        });
+    });
+</script>
+
+{% endblock %}

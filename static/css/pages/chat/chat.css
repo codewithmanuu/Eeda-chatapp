@@ -1,7 +1,6 @@
 .chat-container {
     display: flex;
     width: 80%;
-    height: 80%;
     margin: 50px auto;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     justify-content: center;
@@ -124,24 +123,39 @@
 
 .chat-footer {
     display: flex;
-    padding: 10px;
-    border-top: 1px solid #ddd;
+    padding: 1.25vh; /* 10px to vh (10px / 800px * 100vh = 1.25vh) */
+    border-top: 0.125vh solid #ddd; /* 1px to vh (1px / 800px * 100vh = 0.125vh) */
 }
 
 .chat-footer input {
     flex: 1;
-    padding: 10px;
+    padding: 1.25vh; /* 10px to vh (10px / 800px * 100vh = 1.25vh) */
     box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 20px;
+    border: 0.125vh solid #ddd; /* 1px to vh (1px / 800px * 100vh = 0.125vh) */
+    border-radius: 2.5vh; /* 20px to vh (20px / 800px * 100vh = 2.5vh) */
 }
 
 .chat-footer button {
-    margin-left: 10px;
-    padding: 10px 20px;
+    margin-left: 1.25vh; /* 10px to vh (10px / 800px * 100vh = 1.25vh) */
+    padding: 1.25vh 2.5vh; /* 10px 20px to vh (10px / 800px * 100vh = 1.25vh, 20px / 800px * 100vh = 2.5vh) */
     border: none;
     background-color: #e66b06;
     color: #fff;
-    border-radius: 20px;
+    border-radius: 2.5vh; /* 20px to vh (20px / 800px * 100vh = 2.5vh) */
     cursor: pointer;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh; /* This makes the container take the full viewport height */
+    width: 100%; /* This makes the container take the full viewport width */
+    overflow: hidden; /* Ensure no overflow if the image is too big */
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ensures the image maintains its aspect ratio */
 }

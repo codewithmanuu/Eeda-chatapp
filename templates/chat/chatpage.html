@@ -28,7 +28,10 @@
             </div>
         </div>
         <div class="chat-window">
-            <div class="chat-header">
+            <div id="image-container" class="image-container">
+                <img src="{% static 'images/2842499.jpg' %}">
+            </div> 
+            <!-- <div class="chat-header">
                 <div class="chat-img">
 
                 </div>
@@ -36,11 +39,9 @@
                     <div class="chat-name"></div>
                     <div class="chat-status"></div>
                 </div>
-            </div>
+            </div> -->
             <div class="chat-body" style="display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: center;">
-                    <img src="{% static 'images/2842499.jpg' %}" height="250px">
-                </div>
+                               
             </div>
             <!-- <div class="chat-footer">
                 <input type="text" id="chat-message-input" placeholder="Type a message">
@@ -56,6 +57,7 @@
         var selected = null;
         var chatSocket = null;
         var InputBox = null;
+        var ChatHeader = null;
         $('.chat').click(function() {
             const username = $(this).data('username');
             const img = $(this).data('img');
@@ -64,12 +66,35 @@
             if (selected === username) return false;
             const userId = $(this).data('userid');
             selected = username;
+
+            //Creating Chat-Header if not created
+            if (!ChatHeader)
+            {
+                ChatHeader = `<div class="chat-header"></div>`;
+                ImgDiv = `<div class="chat-img"></div>`;
+                InfoDiv = `<div class="chat-info"></div>`;
+                NameDiv = `<div class="chat-name"></div>`;
+                StatusDiv = `<div class="chat-status"></div>`;
+                $('.chat-window').prepend(ChatHeader);
+                $('.chat-header').append(ImgDiv);
+                $('.chat-header').append(InfoDiv)
+                $('.chat-info').append(NameDiv);
+                $('.chat-info').append(StatusDiv);
+            }
+
+
+
             $('.chat-header .chat-img').html('<img src="' + img + '" alt="Chat Image">');
             $('.chat-header .chat-info .chat-name').html('<h3>' + firstname + ' ' + lastname + '</h3>');
 
             var chatbody = document.getElementsByClassName('chat-body');
                 for (var i = 0; i < chatbody.length; i++) {
                     chatbody[i].innerHTML = '';
+            }
+
+            var chatbody = document.getElementById('image-container');
+            if (chatbody){
+                chatbody.remove();
             }
             // Close any existing WebSocket connection
             if (chatSocket) {
@@ -96,7 +121,7 @@
 
             if (!InputBox){
             console.log(InputBox,"-------------------------");
-            InputBox = `<div class="chat-footer"><input type="text" id="chat-message-input" placeholder="Type a message"><button id="chat-message-submit" >Send</button>`;
+            InputBox = `<div class="chat-footer"><input type="text" id="chat-message-input" placeholder="Type a message"><button id="chat-message-submit" >Send</button></div>`;
             $('.chat-window').append(InputBox);
             }
 

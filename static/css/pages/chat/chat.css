@@ -26,6 +26,15 @@
 }
 
 .chat-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.friend-request {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.add-friends {
+    max-height: 300px;
     overflow-y: auto;
 }
 
@@ -158,4 +167,120 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain; /* Ensures the image maintains its aspect ratio */
+}
+
+/* Nav menu styles */
+
+.nav {
+    display: flex;
+    justify-content: space-around;
+    background-color: #f1f1f1;
+    padding: 10px;
+}
+
+.nv-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: #f1f1f1;
+}
+
+.nv-button:hover {
+    background-color: #ccc;
+}
+
+.nv-button.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #000;
+}
+
+/* send request styles */
+
+.users {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.users:hover {
+    background-color: #e9ecef;
+}
+
+.user-img {
+    display: inline-block;
+}
+
+.user-img > img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.action {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: bold;
+}
+
+
+/* friend request styles */
+.friend-container {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.friend-container:hover {
+    background-color: #e9ecef;
+}
+
+.friend-img-container {
+    display: inline-block;
+}
+
+.friend-img-container > img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 10px; 
+    width: 30vh;
+}
+
+.friend-name {
+    font-weight: bold;
+}
+
+.btn {
+    flex: 1; /* Makes each button take up an equal amount of space */
+}
+
+/* notification styles  */
+.friend-request-button {
+    position: relative;
+}
+
+.notification-count {
+    position: absolute;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 0px 7px;
+    font-size: 12px;
 }

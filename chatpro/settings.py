@@ -30,6 +30,7 @@ SECRET_KEY = 'django-insecure-v2+a(f76b33#t-jy(6a8=kf2p#2my=nhf(@%ezi$(j_yn_(%*s
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = [env("CSRF_TRUSTED_ORIGINS")]
 
 # CORS_ORIGIN_WHITELIST = (
 #     'http://localhost:3000',
@@ -128,6 +129,15 @@ CHANNEL_LAYERS = {
     },
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 
 # Password validation
@@ -176,4 +186,3 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = ['https://tightly-normal-barnacle.ngrok-free.app']

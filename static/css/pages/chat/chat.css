@@ -267,7 +267,7 @@
     font-weight: bold;
 }
 
-.btn {
+#f-btn {
     flex: 1; /* Makes each button take up an equal amount of space */
 }
 

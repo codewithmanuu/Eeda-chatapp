@@ -10,8 +10,11 @@ from django.contrib.auth import logout
 from .models import Useraccount
 
 class RegistrationView(TemplateView,View):
-    template_name = 'authentication/reg.html'
     form_class = UserCreationForm
+    def get(self, request):
+        if self.request.user.is_authenticated:
+            return redirect('/chat/')
+        return render(request, 'authentication/reg.html')
 
     def post(self, request):
         form = self.form_class(request.POST, request.FILES)
@@ -25,8 +28,11 @@ class RegistrationView(TemplateView,View):
             return JsonResponse(form.errors, status=400)
 
 class LoginView(TemplateView,View):
-    template_name = 'authentication/login.html'
     form_class = LoginForm
+    def get(self, request):
+        if self.request.user.is_authenticated:
+            return redirect('/chat/')
+        return render(request, 'authentication/login.html')
 
     def post(self, request):
         form = self.form_class(request.POST)

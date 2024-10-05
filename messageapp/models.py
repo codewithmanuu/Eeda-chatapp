@@ -1,5 +1,5 @@
 from django.db import models
-from frontendapp.models import Useraccount
+from frontendapp.models import Useraccount, FriendRequest
 # Create your models here.
 
 class Messages(models.Model):

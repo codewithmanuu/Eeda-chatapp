@@ -13,52 +13,240 @@
             <div class="sidebar-header">
                 <input type="text" placeholder="Search or start new chat" />
             </div>
-            <div class="chat-list">
-                {% for user in users %}
-                <div class="chat" data-username="{{ user.user.username }}" data-userid="{{ user.user.id }}" data-img="{{ user.profile_pic.url }}" data-firstname="{{user.user.first_name}}" data-lastname="{{user.user.last_name}}">
-                    <div class="chat-img">
-                        <img src="{{ user.profile_pic.url }}" height="350px" width="400px">
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">{{ user.user.first_name }} {{ user.user.last_name }}</div>
-                        <div class="chat-message"></div>
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="nav">
+                <button class="nv-button" data-target="chat-list" onclick="show_body(event)"><i class="fa-solid fa-comment" style="color: #e66b06;"></i></i></button>
+                <button class="nv-button" class="friend-request-button" data-target="friend-request" onclick="show_body(event)">
+                    <i class="fa-solid fa-user" style="color: #e66b06;"></i></i>
+                    <span id="notification" class="notification-count" hidden>0</span>
+                </button>
+                <button class="nv-button" data-target="add-friends" onclick="show_body(event)"> <i class="fa-solid fa-users" style="color: #e66b06;"></i></button>
             </div>
+            <div class="chat-list" id="chat-list">
+                <!-- {% if friends %}
+                    {% for user in friends %}
+                    <div class="chat" data-username="{{ user.user.username }}" data-userid="{{ user.user.id }}" data-img="{{ user.profile_pic.url }}" data-firstname="{{user.user.first_name}}" data-lastname="{{user.user.last_name}}">
+                        <div class="chat-img">
+                            <img src="{{ user.profile_pic.url }}" height="350px" width="400px">
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">{{ user.user.first_name }} {{ user.user.last_name }}</div>
+                            <div class="chat-message"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div style="display: flex; justify-self: center; justify-content: center; align-items: center;">
+                    <p style="margin-top: 50%; margin-bottom: 50%;"><b>There are no friends....</b></p>
+                </div>
+                {% endif %} -->
+            </div>
+            <div id="friend-request" class="friend-request" style="display: flex; flex-direction: column;" hidden>
+                
+            </div>
+                <div id="add-friends" class="add-friends" style="display: flex; flex-direction: column;" hidden>
+                    
+                </div>
         </div>
         <div class="chat-window">
             <div id="image-container" class="image-container">
                 <img src="{% static 'images/2842499.jpg' %}">
             </div> 
-            <!-- <div class="chat-header">
-                <div class="chat-img">
-
-                </div>
-                <div class="chat-info">
-                    <div class="chat-name"></div>
-                    <div class="chat-status"></div>
-                </div>
-            </div> -->
             <div class="chat-body" style="display: flex; flex-direction: column;">
                                
             </div>
-            <!-- <div class="chat-footer">
-                <input type="text" id="chat-message-input" placeholder="Type a message">
-                <button id="chat-message-submit" >Send</button>
-            </div> -->
         </div>
     </div>
 {% endblock %}
 
 {% block js %}
 <script>
+    //Here goes the friend requests fetching logic using websocket
+    var request_socket = null;
+
+    function FetchRequest() {
+        if (request_socket) {
+            request_socket.close();
+        }
+        request_socket = new WebSocket(
+            'ws://' + window.location.host + '/ws/friend_requests/'
+        );
+        $('#friend-request').empty();
+
+
+        request_socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.no_friends) {
+                p=`<div id="no-requests" style="display: flex; justify-self: center; justify-content: center; align-items: center;">
+                    <p style="margin-top: 50%; margin-bottom: 50%;"><b>There are no Friend Requests....</b></p>
+                </div>`
+                $('#friend-request').append(p);
+            } else {
+                $('#no-requests').remove();
+                const message = data.message;
+                const username = data.username;
+                const first_name = data.first_name;
+                const last_name = data.last_name;
+                const profile_pic = data.profile_pic
+                const cancel = data.cancel
+                const count = data.count
+                if (!cancel)
+                {
+                    const friend_container = `
+                                            <form id="${username}" method="POST" onsubmit="sendRequest(event, '${username}')">
+                                            {% csrf_token %}
+                                            <div class="friend-container" data-username="${username}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
+                                            <div class="friend-img-container"><img src="${ profile_pic }" height="350px" width="400px"></div>
+                                            <div class="friend-info">
+                                                    <div class="chat-name">${first_name} ${last_name}</div>
+                                                    <div class="friend-actions">
+                                                        <button id="f-btn"  type="submit" value="Accept Request" class="btn btn-light-success w-100"><i class="fa-solid fa-check"></i>&nbspAccept</button>
+                                                        <button id="f-btn" type="submit" value="Reject Request" class="btn btn-light-danger w-100"><i class="fa-solid fa-circle-xmark"></i>&nbspReject</button>
+                                                    </div>
+                                            </div>
+                                            </div>
+                                            </form>`
+                    $('#friend-request').append(friend_container);
+                    setNotificationCount(count);
+                } else {
+                    $(`#${username}`).empty();
+                    setNotificationCount(count);
+                }
+            }
+            
+        };
+        request_socket.onclose = function(e) {
+            console.log('Chat socket closed unexpectedly');
+        };
+        setNotificationCount(0);
+
+    }
+    var send_request_socket = null;
+    function FetchUsers() {
+        if (send_request_socket) {
+            send_request_socket.close();
+        }
+        send_request_socket = new WebSocket(
+            'ws://' + window.location.host + '/ws/send_requests/'
+        );
+        $('#add-friends').empty();
+
+        send_request_socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const username = data.username;
+            const first_name = data.first_name;
+            const last_name = data.last_name;
+            const profile_pic = data.profile_pic
+            const is_sended = data.is_sended
+            const is_accepted = data.is_accepted
+            const is_rejected = data.is_rejected
+            var user_container = null;
+            if (!is_accepted && !is_rejected){
+                if (!is_sended)
+                {
+                    user_container =`<form id="send_${username}" method="POST" onsubmit="sendRequest(event, '${username}')">
+                            {% csrf_token %}
+                            <div class="users" data-username="${username}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
+                                <div class="user-img">
+                                    <img src="${ profile_pic }" height="350px" width="400px">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">${first_name} ${last_name}</div>
+                                    <div class="action">
+                                        <button  type="submit" value="Send request" class="btn btn-light-warning w-100">Send Request</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>`
+                } else {
+                    user_container = `<form id="send_${username}" method="POST" onsubmit="sendRequest(event, '${username}')">
+                        {% csrf_token %}
+                            <div class="users" data-username="${username}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
+                                <div class="user-img">
+                                    <img src="${ profile_pic }" height="350px" width="400px">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">${first_name} ${last_name}</div>
+                                    <div class="action">
+                                        <button  type="submit" value="Cancel request" class="btn btn-light-danger w-100">Cancel Request</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>`
+                }
+                $('#add-friends').append(user_container);
+            } else if(is_accepted) {
+                $(`#send_${username}`).empty()
+            } else {
+                $(`#send_${username} .action button`).text('Send Request')
+                .removeClass('btn-light-danger')
+                .addClass('btn-light-warning')
+                .val('Send request');
+            }
+        };
+
+        request_socket.onclose = function(e) {
+            console.log('Chat socket closed unexpectedly');
+        };
+
+    }
+    var fetch_friends_socket = null;
+    function FetchFriends() {
+        if (fetch_friends_socket) {
+            fetch_friends_socket.close();
+        }
+        fetch_friends_socket = new WebSocket(
+            'ws://' + window.location.host + '/ws/fetch_friends/'
+        );
+        $('#chat-list').empty();
+
+
+        fetch_friends_socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.no_friends) {
+                p=`<div id="no-friends" style="display: flex; justify-self: center; justify-content: center; align-items: center;">
+                    <p style="margin-top: 50%; margin-bottom: 50%;"><b>There are no Friends....</b></p>
+                </div>`
+                $('#chat-list').append(p);
+            } else {
+                $('#no-friends').remove();
+                const id = data.id
+                const username = data.username;
+                const first_name = data.first_name;
+                const last_name = data.last_name;
+                const profile_pic = data.profile_pic
+                const msg = data.latest_message
+
+                const friend = `<div class="chat" id="chat-${username}" data-username="${username}" data-userid="${id}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
+                                            <div class="chat-img">
+                                                <img src="${ profile_pic }" height="350px" width="400px">
+                                            </div>
+                                            <div class="chat-info">
+                                                <div class="chat-name">${first_name} ${last_name}</div>
+                                                <div class="chat-message"></div>
+                                            </div>
+                                        </div>`
+                $('#chat-list').append(friend);
+            }
+            
+        };
+        fetch_friends_socket.onclose = function(e) {
+            console.log('Chat socket closed unexpectedly');
+        };
+        fetch_friends_socket.onerror = function(e) {
+            console.log(e,"fetch_friends_socket eror occured")
+        }
+
+    }
+
     $(document).ready(function() {
+        FetchFriends();
+        FetchRequest();
+        FetchUsers();
         var selected = null;
         var chatSocket = null;
         var InputBox = null;
         var ChatHeader = null;
-        $('.chat').click(function() {
+        $(document).on('click', '.chat', function() {
             const username = $(this).data('username');
             const img = $(this).data('img');
             const firstname = $(this).data('firstname');
@@ -106,7 +294,7 @@
             }
 
             chatSocket = new WebSocket(
-                'wss://' + window.location.host + '/ws/chat/' + username + '/'
+                'ws://' + window.location.host + '/ws/chat/' + username + '/'
             );
             
             chatSocket.onmessage = function(e) {
@@ -120,7 +308,6 @@
             };
 
             if (!InputBox){
-            console.log(InputBox,"-------------------------");
             InputBox = `<div class="chat-footer"><input type="text" id="chat-message-input" placeholder="Type a message"><button id="chat-message-submit" >Send</button></div>`;
             $('.chat-window').append(InputBox);
             }
@@ -141,6 +328,269 @@
             });
         });
     });
+    function sendRequest(event, username) {
+        event.preventDefault();
+        const button = event.submitter; // event.submitter provides the button that triggered the form submission
+
+        // Get the value attribute
+        const buttonValue = button.getAttribute('value');
+
+
+        // Get the CSRF token from the form
+        var csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+        // Create a FormData object and append the username and CSRF token
+        var formData = new FormData();
+        formData.append('username', username);
+
+        // Send the AJAX request
+        if (buttonValue == "Send request")
+        {
+            $.ajax({
+                type: 'POST',
+                url: '/chat/send_request/',
+                data: formData,
+                processData: false,  // Important: prevent jQuery from processing the data
+                contentType: false,  // Important: prevent jQuery from setting the content type header
+                headers: {
+                    'X-CSRFToken': csrfToken  // Add the CSRF token to the headers
+                },
+                success: function(response) {
+                    success_msg = response.success
+                    swal.fire({
+                        text: success_msg,
+                        icon: "success",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        // also sending through websocket
+                        if (request_socket) {
+                            request_socket.close();
+                        }
+                        request_socket = new WebSocket(
+                            'ws://' + window.location.host + '/ws/friend_requests/'
+                        );
+
+                        request_socket.onopen = function(e) {
+                            console.log('WebSocket connection established');
+                            request_socket.send(JSON.stringify({
+                                'to_username': username,
+                            }));
+                            console.log("Message sent successfully");
+                            FetchUsers();
+                            FetchRequest();
+                        };
+                        request_socket.onerror = function(e) {
+                            console.error('WebSocket error:', e);
+                        };
+
+                    });
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    localStorage.setItem('send_request', 'true');
+                    swal.fire({
+                        text: response.error,
+                        icon: "error",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok, got it!",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        window.location.href = '/chat/';
+                    });
+                }
+            });
+        }  else if (buttonValue == "Accept Request"){
+            $.ajax({
+                type: 'POST',
+                url: '/chat/accept_request/',
+                data: formData,
+                processData: false,  // Important: prevent jQuery from processing the data
+                contentType: false,  // Important: prevent jQuery from setting the content type header
+                headers: {
+                    'X-CSRFToken': csrfToken  // Add the CSRF token to the headers
+                },
+                success: function(response) {
+                    success_msg = response.success
+                    swal.fire({
+                        text: success_msg,
+                        icon: "success",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        // also sending through websocket
+                        if (send_request_socket) {
+                            send_request_socket.close();
+                        }
+                        send_request_socket = new WebSocket(
+                            'ws://' + window.location.host + '/ws/send_requests/'
+                        );
+
+                        send_request_socket.onopen = function(e) {
+                            console.log('WebSocket connection established');
+                            send_request_socket.send(JSON.stringify({
+                                'to_username': username,
+                                'type' : 'accepted',
+                            }));
+                            console.log("Message sent successfully");
+                            FetchRequest();
+                        };
+                        send_request_socket.onerror = function(e) {
+                            console.error('WebSocket error:', e);
+                        };
+
+                    });
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    localStorage.setItem('send_request', 'true');
+                    swal.fire({
+                        text: response.error,
+                        icon: "error",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok, got it!",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        window.location.href = '/chat/';
+                    });
+                }
+            });
+
+        }
+        else {
+            if (buttonValue == 'Cancel request') {
+                type = 'cancel'
+            } else {
+                type = 'reject'
+            }
+            $.ajax({
+                url: '/chat/send_request/', 
+                type: 'DELETE',       
+                data: JSON.stringify({'username': username, 'type' : type}),
+                processData: false,  // Important: prevent jQuery from processing the data
+                contentType: false,  // Important: prevent jQuery from setting the content type header
+                headers: {
+                    'X-CSRFToken': csrfToken  // Add the CSRF token to the headers
+                },
+                success: function(response) {
+                    localStorage.setItem('send_request', 'true');
+                    success_msg = response.success
+                    swal.fire({
+                        text: success_msg,
+                        icon: "success",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        
+                        if (buttonValue == "Cancel request")
+                        {
+                            // also sending through websocket
+                            if (request_socket) {
+                                request_socket.close();
+                            }
+                            request_socket = new WebSocket(
+                                'ws://' + window.location.host + '/ws/friend_requests/'
+                            );
+
+                            request_socket.onopen = function(e) {
+                                console.log('WebSocket connection established');
+                                request_socket.send(JSON.stringify({
+                                    'to_username': username,
+                                    'type' : 'cancel',
+                                }));
+                                console.log("Message sent successfully");
+                                FetchUsers();
+                                FetchRequest();
+                            };
+                            request_socket.onerror = function(e) {
+                                console.error('WebSocket error:', e);
+                            };
+                        } else {
+                            if (send_request_socket) {
+                                send_request_socket.close();
+                            }
+                            send_request_socket = new WebSocket(
+                                'ws://' + window.location.host + '/ws/send_requests/'
+                            );
+
+                            send_request_socket.onopen = function(e) {
+                                console.log('WebSocket connection established');
+                                send_request_socket.send(JSON.stringify({
+                                    'to_username': username,
+                                    'type' : 'cancel',
+                                }));
+                                console.log("Message sent successfully");
+                                FetchRequest();
+                            };
+                            send_request_socket.onerror = function(e) {
+                                console.error('WebSocket error:', e);
+                            };
+                        } 
+
+
+                    });
+
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    localStorage.setItem('send_request', 'true');
+                    swal.fire({
+                        text: response.error,
+                        icon: "error",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok, got it!",
+                        customClass: {
+                            confirmButton: "btn font-weight-bold btn-light-primary"
+                        }
+                    }).then(function () {
+                        window.location.href = '/chat/';
+                    });
+                }
+            });
+        }
+    }
+    function show_body(event) {
+        var targetId = $(event.target).closest('button').data('target');
+        var targetDiv = $('#' + targetId);
+        if (targetId == "friend-request"){
+            FetchRequest();
+        }
+        else if (targetId == "add-friends") {
+            FetchUsers();
+        }
+        else{
+            FetchFriends();
+        }
+        if (targetDiv.prop('hidden')) {
+            $('.chat-list, .friend-request, .add-friends').prop('hidden', true);
+            targetDiv.prop('hidden', false);
+        }
+    }
+    function setNotificationCount(count) {
+        $('#notification').empty();
+        const notificationCountElement = $('#notification');
+
+        if (count > 0) {
+            notificationCountElement.text(count);
+            notificationCountElement.prop('hidden', false);
+        } else {
+            notificationCountElement.text(0);
+            notificationCountElement.prop('hidden', true);
+        }
+    }
 </script>
 
 {% endblock %}

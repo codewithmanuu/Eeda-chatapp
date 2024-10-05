@@ -28,8 +28,11 @@ class RegistrationView(TemplateView,View):
             return JsonResponse(form.errors, status=400)
 
 class LoginView(TemplateView,View):
-    template_name = 'authentication/login.html'
     form_class = LoginForm
+    def get(self, request):
+        if self.request.user.is_authenticated:
+            return redirect('/chat/')
+        return render(request, 'authentication/login.html')
 
     def post(self, request):
         form = self.form_class(request.POST)

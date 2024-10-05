@@ -87,7 +87,7 @@ class AcceptRequest(View):
             request_obj.accept_status = True
             request_obj.save()
             frm_usr.friends.add(to_usr)
-            to_usr.friends.aadd(frm_usr)
+            to_usr.friends.add(frm_usr)
             return JsonResponse({"success":f"Now you can start conversations with {to_usr.user.first_name} {to_usr.user.last_name}"},status=200)
         except Exception as e:
             print(f"ERROR IN ACCEPT REQUEST:{e}")

@@ -342,12 +342,17 @@ class FriendConsumer(WebsocketConsumer):
         if friends.exists():
             for friend in friends:
                 profile_pic_url =friend.profile_pic.url if friend.profile_pic.url else None
+                room = Room.objects.filter(Q(frm=current_user_account, to=friend) | Q(frm=friend, to=current_user_account)).first()
+                latest_message = ''
+                if room and room.meessages.exists():
+                    latest_message = room.meessages.order_by('-id').first().msg
                 self.send(text_data=json.dumps({
                     'id': friend.user.id,
                     'username': friend.user.username,
                     'first_name': friend.user.first_name,
                     'last_name': friend.user.last_name,
                     'profile_pic': profile_pic_url,
+                    'latest_message':latest_message,
                 }))
         else:
             self.send(text_data=json.dumps({

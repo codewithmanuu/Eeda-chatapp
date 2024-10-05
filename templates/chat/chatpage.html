@@ -68,7 +68,7 @@
             request_socket.close();
         }
         request_socket = new WebSocket(
-            'wss://' + window.location.host + '/ws/friend_requests/'
+            'ws://' + window.location.host + '/ws/friend_requests/'
         );
         $('#friend-request').empty();
 
@@ -126,7 +126,7 @@
             send_request_socket.close();
         }
         send_request_socket = new WebSocket(
-            'wss://' + window.location.host + '/ws/send_requests/'
+            'ws://' + window.location.host + '/ws/send_requests/'
         );
         $('#add-friends').empty();
 
@@ -195,7 +195,7 @@
             fetch_friends_socket.close();
         }
         fetch_friends_socket = new WebSocket(
-            'wss://' + window.location.host + '/ws/fetch_friends/'
+            'ws://' + window.location.host + '/ws/fetch_friends/'
         );
         $('#chat-list').empty();
 
@@ -214,8 +214,9 @@
                 const first_name = data.first_name;
                 const last_name = data.last_name;
                 const profile_pic = data.profile_pic
+                const msg = data.latest_message
 
-                const friend = `<div class="chat" data-username="${username}" data-userid="${id}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
+                const friend = `<div class="chat" id="chat-${username}" data-username="${username}" data-userid="${id}" data-img="${ profile_pic }" data-firstname="${first_name}" data-lastname="${last_name}">
                                             <div class="chat-img">
                                                 <img src="${ profile_pic }" height="350px" width="400px">
                                             </div>
@@ -293,7 +294,7 @@
             }
 
             chatSocket = new WebSocket(
-                'wss://' + window.location.host + '/ws/chat/' + username + '/'
+                'ws://' + window.location.host + '/ws/chat/' + username + '/'
             );
             
             chatSocket.onmessage = function(e) {
@@ -370,7 +371,7 @@
                             request_socket.close();
                         }
                         request_socket = new WebSocket(
-                            'wss://' + window.location.host + '/ws/friend_requests/'
+                            'ws://' + window.location.host + '/ws/friend_requests/'
                         );
 
                         request_socket.onopen = function(e) {
@@ -430,7 +431,7 @@
                             send_request_socket.close();
                         }
                         send_request_socket = new WebSocket(
-                            'wss://' + window.location.host + '/ws/send_requests/'
+                            'ws://' + window.location.host + '/ws/send_requests/'
                         );
 
                         send_request_socket.onopen = function(e) {
@@ -501,7 +502,7 @@
                                 request_socket.close();
                             }
                             request_socket = new WebSocket(
-                                'wss://' + window.location.host + '/ws/friend_requests/'
+                                'ws://' + window.location.host + '/ws/friend_requests/'
                             );
 
                             request_socket.onopen = function(e) {
@@ -522,7 +523,7 @@
                                 send_request_socket.close();
                             }
                             send_request_socket = new WebSocket(
-                                'wss://' + window.location.host + '/ws/send_requests/'
+                                'ws://' + window.location.host + '/ws/send_requests/'
                             );
 
                             send_request_socket.onopen = function(e) {

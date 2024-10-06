@@ -83,6 +83,15 @@ Eeda is a real-time WebSocket-based chat application built with Django. It allow
    ```windows
    docker-compose up --build
 
+## Contributing
+
+**We welcome contributions from developers! Whether you're a frontend or backend developer, feel free to get involved and help improve the application.**
+
+- **Frontend Developers**: If you're a frontend developer, feel free to enhance the user interface or improve the user experience by updating the frontend components.
+- **Backend Developers**: If you're a backend developer, contributions to new features, bug fixes, or performance improvements are highly appreciated.
+
+**To contribute, fork the repository, make your changes, and submit a pull request. We’ll review it and merge it as appropriate.**
+
 ## Contact
 
 - For questions or comments, please reach out <mailto:manukrishna.s2001@gmail.com>
